@@ -46,9 +46,9 @@ xgb_model = xgb.XGBClassifier(random_state=42)
 
 # Define hyperparameter grid
 param_grid = {
-    'xgbregressor__n_estimators': [50, 100],
-    'xgbregressor__max_depth': [2, 3],
-    'xgbregressor__learning_rate': [0.01, 0.05],
+    'xgbclassifier__n_estimators': [50, 100],
+    'xgbclassifier__max_depth': [2, 3],
+    'xgbclassifier__learning_rate': [0.01, 0.05],
 }
 
 # Create pipeline
