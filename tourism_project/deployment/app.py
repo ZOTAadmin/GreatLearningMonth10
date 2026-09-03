@@ -34,11 +34,10 @@ numberOfChildrenVisiting = st.number_input("NumberOfChildrenVisiting", min_value
 designation = st.selectbox("Designation", ["Manager","Executive","Senior Manager","VP","AVP"])
 monthlyIncome = st.number_input("MonthlyIncome", min_value=1, max_value=1000000, value=23000, step=1000)
 
-# Convert to binary
-st.write("passport -- **${passport}**")
-passport_binary = 1 if passport == "yes" else 0
-st.write("passport_binary -- **${passport_binary:,.2f}**")
-
+# Helper function to convert yes/no to binary
+def to_binary(value):
+    return 1 if value == "yes" else 0
+    
 # Assemble input into DataFrame
 input_data = pd.DataFrame([{
     'Age': age ,
@@ -53,9 +52,9 @@ input_data = pd.DataFrame([{
     'PreferredPropertyStar': preferredPropertyStar ,
     'MaritalStatus': maritalStatus ,
     'NumberOfTrips': numberOfTrips ,
-    'Passport': passport_binary ,
+    'Passport': to_binary(passport),  # Convert to binary
     'PitchSatisfactionScore': pitchSatisfactionScore ,
-    'OwnCar': ownCar ,
+    'OwnCar': to_binary(ownCar),  # Convert to binary
     'NumberOfChildrenVisiting': numberOfChildrenVisiting ,
     'Designation': designation ,
     'MonthlyIncome': monthlyIncome
