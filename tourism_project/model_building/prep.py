@@ -11,13 +11,12 @@ from sklearn.preprocessing import LabelEncoder
 from huggingface_hub import login, HfApi
 
 # Define constants for the dataset and output paths
-api = HfApi(token=os.getenv("HF_TOKEN"))
-DATASET_PATH = "hf://datasets/ZOTAadmin/GreatLearningMonth10/tourism.csv"
+DATASET_PATH = "tourism_project/data/tourism.csv"
 df = pd.read_csv(DATASET_PATH)
 print("Dataset loaded successfully.")
 
 # Drop unique identifier column (not useful for modeling)
-df.drop(columns=['CustomerID', 'Unnamed'], inplace=True)
+df.drop(columns=['Unnamed', 'CustomerID'], inplace=True)
 
 # Encode categorical columns
 label_encoder = LabelEncoder()
@@ -41,13 +40,4 @@ Xtest.to_csv("Xtest.csv",index=False)
 ytrain.to_csv("ytrain.csv",index=False)
 ytest.to_csv("ytest.csv",index=False)
 
-
-files = ["Xtrain.csv","Xtest.csv","ytrain.csv","ytest.csv"]
-
-for file_path in files:
-    api.upload_file(
-        path_or_fileobj=file_path,
-        path_in_repo=file_path.split("/")[-1],  # just the filename
-        repo_id="ZOTAadmin/GreatLearningMonth10",
-        repo_type="dataset",
-    )
+print("Data prepared: train/test splits written.")
