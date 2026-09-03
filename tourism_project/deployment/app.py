@@ -1,13 +1,10 @@
+import os
 import streamlit as st
 import pandas as pd
-from huggingface_hub import hf_hub_download
 import joblib
 
 # Download and load the model from Hugging Face Hub
-model_path = hf_hub_download(
-    repo_id="ZOTAadmin/GreatLearningMonth10",
-    filename="tourism_project_v1.joblib"
-)
+model_path = os.path.join(os.path.dirname(__file__), "tourism_project_v1.joblib")
 model = joblib.load(model_path)
 
 # Streamlit UI for Insurance Charges Prediction
