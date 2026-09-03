@@ -36,24 +36,24 @@ monthlyIncome = st.number_input("MonthlyIncome", min_value=1, max_value=1000000,
 
 # Assemble input into DataFrame
 input_data = pd.DataFrame([{
-    'age': age ,
-    'typeofContact': typeofContact ,
-    'cityTier': cityTier ,
-    'durationOfPitch': durationOfPitch ,
-    'occupation': occupation ,
-    'gender': gender ,
-    'numberOfPersonVisiting': numberOfPersonVisiting ,
-    'numberOfFollowups': numberOfFollowups ,
-    'productPitched': productPitched ,
-    'preferredPropertyStar': preferredPropertyStar ,
-    'maritalStatus': maritalStatus ,
-    'numberOfTrips': numberOfTrips ,
-    'passport': passport ,
-    'pitchSatisfactionScore': pitchSatisfactionScore ,
-    'ownCar': ownCar ,
-    'numberOfChildrenVisiting': numberOfChildrenVisiting ,
-    'designation': designation ,
-    'monthlyIncome': monthlyIncome
+    'Age': age ,
+    'TypeofContact': typeofContact ,
+    'CityTier': cityTier ,
+    'DurationOfPitch': durationOfPitch ,
+    'Occupation': occupation ,
+    'Gender': gender ,
+    'NumberOfPersonVisiting': numberOfPersonVisiting ,
+    'NumberOfFollowups': numberOfFollowups ,
+    'ProductPitched': productPitched ,
+    'PreferredPropertyStar': preferredPropertyStar ,
+    'MaritalStatus': maritalStatus ,
+    'NumberOfTrips': numberOfTrips ,
+    'Passport': passport ,
+    'PitchSatisfactionScore': pitchSatisfactionScore ,
+    'OwnCar': ownCar ,
+    'NumberOfChildrenVisiting': numberOfChildrenVisiting ,
+    'Designation': designation ,
+    'MonthlyIncome': monthlyIncome
 }])
 
 # Prediction
