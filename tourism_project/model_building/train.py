@@ -13,16 +13,16 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 # for model serialization
 import joblib
 import os
-# for hugging face space authentication to upload files
-from huggingface_hub import login, HfApi, create_repo
-from huggingface_hub.utils import RepositoryNotFoundError, HfHubHTTPError
+import mlflow
 
-api = HfApi()
+mlflow.set_tracking_uri("http://localhost:5000")
+mlflow.set_experiment("mlops-training-experiment")
 
-Xtrain_path = "hf://datasets/ZOTAadmin/GreatLearningMonth10/Xtrain.csv"
-Xtest_path = "hf://datasets/ZOTAadmin/GreatLearningMonth10/Xtest.csv"
-ytrain_path = "hf://datasets/ZOTAadmin/GreatLearningMonth10/ytrain.csv"
-ytest_path = "hf://datasets/ZOTAadmin/GreatLearningMonth10/ytest.csv"
+# Xtrain/Xtest/ytrain/ytest are downloaded from the previous job's artifact
+Xtrain_path = "Xtrain.csv"
+Xtest_path = "Xtest.csv"
+ytrain_path = "ytrain.csv"
+ytest_path = "ytest.csv"
 
 Xtrain = pd.read_csv(Xtrain_path)
 Xtest = pd.read_csv(Xtest_path)
@@ -30,7 +30,9 @@ ytrain = pd.read_csv(ytrain_path)
 ytest = pd.read_csv(ytest_path)
 
 # Define features
-numeric_features = ['Age', 'CityTier', 'DurationOfPitch','NumberOfPersonVisiting','NumberOfFollowups','PreferredPropertyStar','NumberOfTrips','Passport','PitchSatisfactionScore','OwnCar','NumberOfChildrenVisiting','MonthlyIncome']
+numeric_features = ['Age', 'CityTier', 'DurationOfPitch','NumberOfPersonVisiting',
+                    'NumberOfFollowups','PreferredPropertyStar','NumberOfTrips','Passport',
+                    'PitchSatisfactionScore','OwnCar','NumberOfChildrenVisiting','MonthlyIncome']
 categorical_features = ['TypeofContact', 'Occupation', 'Gender','ProductPitched','MaritalStatus','Designation']
 
 # Preprocessing pipeline
@@ -40,68 +42,71 @@ preprocessor = make_column_transformer(
 )
 
 # Define XGBoost Regressor
-xgb_model = xgb.XGBRegressor(random_state=42, objective="reg:squarederror")
+xgb_model = xgb.XGBRegressor(random_state=42)
 
 # Define hyperparameter grid
 param_grid = {
     'xgbregressor__n_estimators': [50, 100],
     'xgbregressor__max_depth': [2, 3],
     'xgbregressor__learning_rate': [0.01, 0.05],
-    'xgbregressor__colsample_bytree': [0.6, 0.8],
-    'xgbregressor__subsample': [0.6, 0.8],
-    'xgbregressor__reg_lambda': [0.5, 1],
 }
 
 # Create pipeline
 model_pipeline = make_pipeline(preprocessor, xgb_model)
 
-# Grid search with cross-validation
-grid_search = GridSearchCV(
-    model_pipeline, param_grid, cv=5, scoring='neg_mean_squared_error', n_jobs=-1
-)
-grid_search.fit(Xtrain, ytrain)
+# Start MLflow run
+with mlflow.start_run():
+    # Hyperparameter tuning
+    grid_search = GridSearchCV(model_pipeline, param_grid, cv=5, scoring="recall", n_jobs=-1)
+    grid_search.fit(Xtrain, ytrain)
 
-# Best model
-best_model = grid_search.best_estimator_
-print("Best Params:\n", grid_search.best_params_)
+    # Log all parameter combinations and their mean test scores
+    results = grid_search.cv_results_
+    for i in range(len(results["params"])):
+        param_set = results["params"][i]
+        mean_score = results["mean_test_score"][i]
+        std_score = results["std_test_score"][i]
 
-# Predictions
-y_pred_train = best_model.predict(Xtrain)
-y_pred_test = best_model.predict(Xtest)
+        # Log each combination as a separate MLflow run
+        with mlflow.start_run(nested=True):
+            mlflow.log_params(param_set)
+            mlflow.log_metric("mean_test_score", mean_score)
+            mlflow.log_metric("std_test_score", std_score)
 
-# Evaluation
-print("\nTraining Performance:")
-print("MAE:", mean_absolute_error(ytrain, y_pred_train))
-print("RMSE:", np.sqrt(mean_squared_error(ytrain, y_pred_train)))
-print("R²:", r2_score(ytrain, y_pred_train))
+    # Log best parameters separately in main run
+    mlflow.log_params(grid_search.best_params_)
 
-print("\nTest Performance:")
-print("MAE:", mean_absolute_error(ytest, y_pred_test))
-print("RMSE:", np.sqrt(mean_squared_error(ytest, y_pred_test)))
-print("R²:", r2_score(ytest, y_pred_test))
+    # Store and evaluate the best model
+    best_model = grid_search.best_estimator_
+    print("Best params:", grid_search.best_params_)
 
-# Save best model
-joblib.dump(best_model, "tourism_project_v1.joblib")
+    classification_threshold = 0.5
 
+    y_pred_train_proba = best_model.predict_proba(Xtrain)[:, 1]
+    y_pred_train = (y_pred_train_proba >= classification_threshold).astype(int)
 
-# Upload to Hugging Face
-repo_id = "ZOTAadmin/GreatLearningMonth10"
-repo_type = "model"
+    y_pred_test_proba = best_model.predict_proba(Xtest)[:, 1]
+    y_pred_test = (y_pred_test_proba >= classification_threshold).astype(int)
 
-api = HfApi(token=os.getenv("HF_TOKEN"))
+    train_report = classification_report(ytrain, y_pred_train, output_dict=True)
+    test_report = classification_report(ytest, y_pred_test, output_dict=True)
+    print(classification_report(ytest, y_pred_test))
 
-# Step 1: Check if the space exists
-try:
-    api.repo_info(repo_id=repo_id, repo_type=repo_type)
-    print(f"Model Space '{repo_id}' already exists. Using it.")
-except RepositoryNotFoundError:
-    print(f"Model Space '{repo_id}' not found. Creating new space...")
-    create_repo(repo_id=repo_id, repo_type=repo_type, private=False)
-    print(f"Model Space '{repo_id}' created.")
+    # Log the metrics for the best model
+    mlflow.log_metrics({
+        "train_accuracy": train_report["accuracy"],
+        "train_precision": train_report["1"]["precision"],
+        "train_recall": train_report["1"]["recall"],
+        "train_f1-score": train_report["1"]["f1-score"],
+        "test_accuracy": test_report["accuracy"],
+        "test_precision": test_report["1"]["precision"],
+        "test_recall": test_report["1"]["recall"],
+        "test_f1-score": test_report["1"]["f1-score"]
+    })
 
-api.upload_file(
-    path_or_fileobj="tourism_project_v1.joblib",
-    path_in_repo="tourism_project_v1.joblib",
-    repo_id=repo_id,
-    repo_type=repo_type,
-)
+    # Save next to app.py so the Streamlit app can load it directly, and log
+    # it as an MLflow artifact for traceability
+    model_path = "tourism_project/deployment/tourism_project_v1.joblib"
+    joblib.dump(best_model, model_path)
+    mlflow.log_artifact(model_path, artifact_path="model")
+    print(f"Model saved to {model_path}")
