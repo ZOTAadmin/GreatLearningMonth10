@@ -41,8 +41,8 @@ preprocessor = make_column_transformer(
     (OneHotEncoder(handle_unknown='ignore'), categorical_features)
 )
 
-# Define XGBoost Regressor
-xgb_model = xgb.XGBRegressor(random_state=42)
+# Define XGBoost Model
+xgb_model = xgb.XGBClassifier(random_state=42)
 
 # Define hyperparameter grid
 param_grid = {
