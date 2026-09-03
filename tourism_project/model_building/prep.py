@@ -7,8 +7,6 @@ import os
 from sklearn.model_selection import train_test_split
 # for converting text data in to numerical representation
 from sklearn.preprocessing import LabelEncoder
-# for hugging face space authentication to upload files
-from huggingface_hub import login, HfApi
 
 # Define constants for the dataset and output paths
 DATASET_PATH = "tourism_project/data/tourism.csv"
@@ -16,7 +14,8 @@ df = pd.read_csv(DATASET_PATH)
 print("Dataset loaded successfully.")
 
 # Drop unique identifier column (not useful for modeling)
-df.drop(columns=['Unnamed', 'CustomerID'], inplace=True)
+df = df.drop(df.columns[0], axis=1, inplace=True) # First Column in Excel file is not named
+df.drop(columns=['CustomerID'], inplace=True)
 
 # Encode categorical columns
 label_encoder = LabelEncoder()
