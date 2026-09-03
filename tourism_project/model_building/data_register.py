@@ -2,24 +2,27 @@ from huggingface_hub.utils import RepositoryNotFoundError, HfHubHTTPError
 from huggingface_hub import HfApi, create_repo
 import os
 
+import pandas as pd
 
-repo_id = "ZOTAadmin/GreatLearningMonth10"
-repo_type = "dataset"
+RAW_PATH = "tourism_project/data/tourism.csv"
 
-# Initialize API client
-api = HfApi(token=os.getenv("HF_TOKEN"))
+# Load the raw dataset
+df = pd.read_csv(RAW_PATH)
 
-# Step 1: Check if the space exists
-try:
-    api.repo_info(repo_id=repo_id, repo_type=repo_type)
-    print(f"Space '{repo_id}' already exists. Using it.")
-except RepositoryNotFoundError:
-    print(f"Space '{repo_id}' not found. Creating new space...")
-    create_repo(repo_id=repo_id, repo_type=repo_type, private=False)
-    print(f"Space '{repo_id}' created.")
+# Validate that the expected columns are present before registering it
+expected_columns = [
+    "Unnamed", "CustomerID","ProdTaken",
+    "Age", "CityTier", "DurationOfPitch","NumberOfPersonVisiting","NumberOfFollowups",
+    "PreferredPropertyStar","NumberOfTrips","Passport","PitchSatisfactionScore","OwnCar",
+    "NumberOfChildrenVisiting","MonthlyIncome","TypeofContact",
+    "Occupation", "Gender","ProductPitched","MaritalStatus","Designation",
+]
+missing = [c for c in expected_columns if c not in df.columns]
+if missing:
+    raise ValueError(f"Dataset is missing expected columns: {missing}")
 
-api.upload_folder(
-    folder_path="tourism_project/data",
-    repo_id=repo_id,
-    repo_type=repo_type,
-)
+print("Dataset registered successfully.")
+print(f"Rows: {df.shape[0]}, Columns: {df.shape[1]}")
+print("Columns:", list(df.columns))
+print("Failure distribution:")
+print(df["Failure"].value_counts())
