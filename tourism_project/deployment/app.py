@@ -37,6 +37,9 @@ monthlyIncome = st.number_input("MonthlyIncome", min_value=1, max_value=1000000,
 # Helper function to convert yes/no to binary
 def to_binary(value):
     return 1 if value == "yes" else 0
+
+def binary_to_text(value):
+    return "Yes" if value == 1 else "No"
     
 # Assemble input into DataFrame
 input_data = pd.DataFrame([{
@@ -64,4 +67,4 @@ input_data = pd.DataFrame([{
 if st.button("Predict Purchase"):
     prediction = model.predict(input_data)[0]
     st.subheader("Prediction Result:")
-    st.success(f"Estimated Purchase Product Taken Decision: **${prediction:,.2f}**")
+    st.success(f"Estimated Purchase Product Taken Decision: **: {binary_to_text(prediction)} **")
