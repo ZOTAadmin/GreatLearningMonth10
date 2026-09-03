@@ -11,7 +11,7 @@ df = pd.read_csv(RAW_PATH)
 
 # Validate that the expected columns are present before registering it
 expected_columns = [
-    "Unnamed", "CustomerID","ProdTaken",
+    "CustomerID","ProdTaken",
     "Age", "CityTier", "DurationOfPitch","NumberOfPersonVisiting","NumberOfFollowups",
     "PreferredPropertyStar","NumberOfTrips","Passport","PitchSatisfactionScore","OwnCar",
     "NumberOfChildrenVisiting","MonthlyIncome","TypeofContact",
