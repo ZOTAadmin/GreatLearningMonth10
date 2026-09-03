@@ -35,7 +35,9 @@ designation = st.selectbox("Designation", ["Manager","Executive","Senior Manager
 monthlyIncome = st.number_input("MonthlyIncome", min_value=1, max_value=1000000, value=23000, step=1000)
 
 # Convert to binary
+st.write("passport -- **${passport}**")
 passport_binary = 1 if passport == "yes" else 0
+st.write("passport_binary -- **${passport_binary:,.2f}**")
 
 # Assemble input into DataFrame
 input_data = pd.DataFrame([{
