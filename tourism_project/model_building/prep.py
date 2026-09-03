@@ -14,7 +14,7 @@ df = pd.read_csv(DATASET_PATH)
 print("Dataset loaded successfully.")
 
 # Drop unique identifier column (not useful for modeling)
-df = df.drop(df.columns[0], axis=1, inplace=True) # First Column in Excel file is not named
+df.drop(df.columns[0], axis=1, inplace=True) # First Column in Excel file is not named
 df.drop(columns=['CustomerID'], inplace=True)
 
 # Encode categorical columns
