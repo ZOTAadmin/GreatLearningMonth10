@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import make_column_transformer
 from sklearn.pipeline import make_pipeline
+from sklearn.metrics import classification_report
 
 # for model training, tuning, and evaluation
 import xgboost as xgb
