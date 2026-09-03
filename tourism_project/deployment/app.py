@@ -34,6 +34,9 @@ numberOfChildrenVisiting = st.number_input("NumberOfChildrenVisiting", min_value
 designation = st.selectbox("Designation", ["Manager","Executive","Senior Manager","VP","AVP"])
 monthlyIncome = st.number_input("MonthlyIncome", min_value=1, max_value=1000000, value=23000, step=1000)
 
+# Convert to binary
+passport_binary = 1 if passport == "yes" else 0
+
 # Assemble input into DataFrame
 input_data = pd.DataFrame([{
     'Age': age ,
@@ -48,7 +51,7 @@ input_data = pd.DataFrame([{
     'PreferredPropertyStar': preferredPropertyStar ,
     'MaritalStatus': maritalStatus ,
     'NumberOfTrips': numberOfTrips ,
-    'Passport': passport ,
+    'Passport': passport_binary ,
     'PitchSatisfactionScore': pitchSatisfactionScore ,
     'OwnCar': ownCar ,
     'NumberOfChildrenVisiting': numberOfChildrenVisiting ,
