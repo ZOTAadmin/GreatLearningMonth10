@@ -40,7 +40,7 @@ def to_binary(value):
 
 def binary_to_text(value):
     return "Yes" if value == 1 else "No"
-    
+
 # Assemble input into DataFrame
 input_data = pd.DataFrame([{
     'Age': age ,
